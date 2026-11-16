@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:v1": "playwright test",
-    "test:v2": "DEMO_URL=https://demo.applitools.com/index_v2.html playwright test",
+    "test:v1": "PLAYWRIGHT_HTML_OPEN=never playwright test",
+    "test:v2": "PLAYWRIGHT_HTML_OPEN=never DEMO_URL=https://demo.applitools.com/index_v2.html playwright test",
     "test:both": "npm run test:v1 && npm run test:v2"
   },
   "keywords": [],
