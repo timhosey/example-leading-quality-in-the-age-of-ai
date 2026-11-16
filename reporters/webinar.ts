@@ -56,6 +56,21 @@ class WebinarReporter implements Reporter {
     return true;
   }
 
+  /**
+   * Playwright captures anything the test or worker writes to stdout/stderr and
+   * hands it to the reporter instead of letting it through. The Eyes SDK's
+   * progress lines ("👀 Waiting on eyes results...", "👀 Eyes results for
+   * worker #0-0: <url>") arrive this way, so without these passthroughs they
+   * are silently dropped. They are the live feedback during a run — keep them.
+   */
+  onStdOut(chunk: string | Buffer) {
+    process.stdout.write(chunk);
+  }
+
+  onStdErr(chunk: string | Buffer) {
+    process.stderr.write(chunk);
+  }
+
   onBegin(_config: FullConfig, suite: Suite) {
     const target = process.env.DEMO_URL ?? 'https://demo.applitools.com/';
     const tests = suite.allTests();
