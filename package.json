@@ -1,0 +1,21 @@
+{
+  "name": "example-leading-quality-in-the-age-of-ai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test:v1": "playwright test",
+    "test:v2": "DEMO_URL=https://demo.applitools.com/index_v2.html playwright test",
+    "test:both": "npm run test:v1 && npm run test:v2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@applitools/eyes-playwright": "^1.52.1",
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^26.6.6",
+    "dotenv": "^18.0.10"
+  }
+}
