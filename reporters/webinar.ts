@@ -45,16 +45,36 @@ class WebinarReporter implements Reporter {
   private diffed = 0;
   private broke = 0;
 
+  /**
+   * `--list` runs onBegin/onEnd without running anything. This reporter replaces
+   * Playwright's own list output, so it has to print the listing itself or the
+   * run ends on a misleading "no tests ran".
+   */
+  private listOnly = process.argv.includes('--list');
+
   printsToStdio() {
     return true;
   }
 
   onBegin(_config: FullConfig, suite: Suite) {
     const target = process.env.DEMO_URL ?? 'https://demo.applitools.com/';
+    const tests = suite.allTests();
+
+    if (this.listOnly) {
+      console.log('');
+      console.log(`${BOLD}Tests${RESET} ${DIM}(${tests.length})${RESET}`);
+      for (const t of tests) {
+        const loc = `${t.location.file.split('/').pop()}:${t.location.line}`;
+        console.log(`  ${t.title} ${DIM}${loc}${RESET}`);
+      }
+      console.log('');
+      return;
+    }
+
     console.log('');
     console.log(`${BOLD}Applitools Eyes${RESET} ${DIM}· Ultrafast Grid${RESET}`);
     console.log(`${DIM}target${RESET}  ${CYAN}${target}${RESET}`);
-    console.log(`${DIM}tests${RESET}   ${suite.allTests().length}`);
+    console.log(`${DIM}tests${RESET}   ${tests.length}`);
     console.log('');
   }
 
@@ -96,6 +116,8 @@ class WebinarReporter implements Reporter {
   }
 
   onEnd(_result: FullResult) {
+    if (this.listOnly) return;
+
     const parts: string[] = [];
     if (this.passed) parts.push(`${GREEN}${this.passed} matched baseline${RESET}`);
     if (this.diffed) parts.push(`${YELLOW}${this.diffed} with visual differences${RESET}`);

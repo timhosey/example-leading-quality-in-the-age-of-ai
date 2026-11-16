@@ -9,13 +9,66 @@ only the URL changes.
 | 1 | `https://demo.applitools.com/` | Creates the baseline (new test, all checkpoints "New") |
 | 2 | `https://demo.applitools.com/index_v2.html` | Compared to run 1 → **diffs** |
 
+## Prerequisites
+
+| | Version | Notes |
+| --- | --- | --- |
+| **Node.js** | 20 or newer | Required by Playwright. `node -v` to check. |
+| **npm** | Ships with Node | `npm -v` to check. |
+| **Applitools account** | Free tier is fine | Sign up at [applitools.com/users/register](https://applitools.com/users/register) |
+
+No local browser install beyond Chromium is needed — the Ultrafast Grid renders
+Firefox, Safari, Edge and the mobile devices in the cloud.
+
 ## Setup
 
-Add your Applitools API key to `.env` (get it from the dashboard: top-right menu → *My API key*):
+**1. Clone and install dependencies**
 
+```bash
+git clone https://github.com/timhosey/example-leading-quality-in-the-age-of-ai.git
 ```
-APPLITOOLS_API_KEY=your_api_key_here
+
+```bash
+cd example-leading-quality-in-the-age-of-ai && npm install
 ```
+
+**2. Install the Chromium browser binary**
+
+Playwright downloads its browsers separately from npm. This config drives only
+Chromium locally, so that is all you need:
+
+```bash
+npx playwright install chromium
+```
+
+**3. Set your Applitools API key**
+
+Find it in the Eyes dashboard under the top-right account menu → **My API key**.
+
+Either export it in your shell:
+
+```bash
+export APPLITOOLS_API_KEY="your_api_key_here"
+```
+
+...or copy `.env.example` to `.env` and fill it in (`.env` is gitignored):
+
+```bash
+cp .env.example .env
+```
+
+An exported shell variable wins over `.env`, so if a run reports
+`apiKey must be an alphanumeric string`, check that whichever one you are using
+actually holds the key.
+
+**4. Verify the setup**
+
+```bash
+npx playwright test --list
+```
+
+That should print one test, `Applitools demo app - login flow`, without
+contacting Applitools.
 
 ## Run
 
@@ -30,7 +83,8 @@ Or both back to back:
 npm run test:both
 ```
 
-Accept the run 1 baseline in the Eyes dashboard before judging run 2's diffs.
+Accept the run 1 baseline in the Eyes dashboard before judging run 2's diffs —
+otherwise run 2's checkpoints come back as *New* rather than *Unresolved*.
 
 ## What differs in v2
 
@@ -53,3 +107,22 @@ local Playwright run, so `projects` in the config is just `chromium`.
 
 - `playwright.config.ts` — Eyes fixture, UFG browser set, batch naming, 5-minute timeout
 - `tests/demo-app.spec.ts` — the test (2 checkpoints: login page, app page)
+- `reporters/webinar.ts` — terminal output: renders a visual diff as a finding
+  with a dashboard link rather than a stack trace
+- `.env.example` — template for the API key
+
+## Troubleshooting
+
+**`apiKey must be an alphanumeric string`** — the key is unset or still a
+placeholder. An exported shell variable takes precedence over `.env`.
+
+**Run 2 shows "New" instead of diffs** — the run 1 baseline has not been accepted
+in the dashboard yet, so there is nothing to compare against.
+
+**The run takes a few minutes** — expected. Each checkpoint renders across six grid
+configurations, and jobs queue against your account's concurrency limit. The
+config allows 5 minutes per test.
+
+**Adding `--reporter=list` hides the results link** — a `--reporter` flag replaces
+the configured reporters, including the Eyes one, which is what prints the batch
+URL. Run `npx playwright test` with no reporter flag.
